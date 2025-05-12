@@ -31,11 +31,25 @@ public class EcfrDTO {
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<DivisionDTO> divisions;
 
+    @Indexed
+    private String titleNumber;
+
     public String getId() {
         if (text != null && text.getBody() != null && text.getBody().getEcfrbrws() != null) {
             return text.getBody().getEcfrbrws().getId();
         }
         return id;
+    }
+
+    public String getTitleNumber() {
+        if (titleNumber == null && text != null && text.getBody() != null && text.getBody().getEcfrbrws() != null) {
+            titleNumber = text.getBody().getEcfrbrws().getTitle();
+        }
+        return titleNumber;
+    }
+
+    public void setTitleNumber(String titleNumber) {
+        this.titleNumber = titleNumber;
     }
 
     public HeaderDTO getHeader() {

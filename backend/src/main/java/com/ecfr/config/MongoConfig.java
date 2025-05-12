@@ -72,7 +72,8 @@ public class MongoConfig {
 
     @Bean
     public MongoClient mongoClient(@Qualifier("mongoCommandListener") CommandListener commandListener) {
-        if (mongoUri == null || mongoUri.trim().isEmpty() || mongoUri.contains(" ")) {
+        mongoUri = mongoUri.trim();
+        if (mongoUri == null || mongoUri.isEmpty() || mongoUri.contains(" ")) {
             throw new IllegalArgumentException("mongoUri is invalid: '" + mongoUri + "'");
         }
         log.info("MongoDB URI used for connection: '{}'", mongoUri);

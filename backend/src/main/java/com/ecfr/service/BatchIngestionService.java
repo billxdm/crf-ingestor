@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,24 @@ public class BatchIngestionService {
                     .and("partNumber").is(document.getPartNumber())
                     .and("sectionNumber").is(document.getSectionNumber()));
 
-                bulkOps.upsert(query, document);
+                Update update = new Update()
+                    .set("titleNumber", document.getTitleNumber())
+                    .set("chapterNumber", document.getChapterNumber())
+                    .set("partNumber", document.getPartNumber())
+                    .set("sectionNumber", document.getSectionNumber())
+                    .set("agency", document.getAgency())
+                    .set("sectionHeading", document.getSectionHeading())
+                    .set("fullText", document.getFullText())
+                    .set("startDate", document.getStartDate())
+                    .set("endDate", document.getEndDate())
+                    .set("changeTypes", document.getChangeTypes())
+                    .set("wordCount", document.getWordCount())
+                    .set("checksum", document.getChecksum())
+                    .set("structureIndex", document.getStructureIndex())
+                    .set("createdAt", document.getCreatedAt())
+                    .set("updatedAt", document.getUpdatedAt());
+
+                bulkOps.upsert(query, update);
                 
                 if (processedCount.incrementAndGet() % BATCH_SIZE == 0) {
                     bulkOps.execute();

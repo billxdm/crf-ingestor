@@ -38,7 +38,7 @@ public class AuthorityDTO extends BaseDTO {
      * Required field.
      */
     @NotBlank(message = "Authority content is required")
-    @JacksonXmlProperty(localName = "AUTHORITY")
+    @JacksonXmlProperty(localName = "AUTHORITY_CONTENT")
     private String content;
 
     /**

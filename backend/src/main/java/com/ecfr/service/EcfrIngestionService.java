@@ -28,6 +28,7 @@ import com.ecfr.model.EcfrDocument;
 import com.ecfr.repository.EcfrDocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Optional;
 
 @Service
 public class EcfrIngestionService {
@@ -175,22 +176,52 @@ public class EcfrIngestionService {
 
     @Async
     @Transactional
-    public CompletableFuture<Void> ingestEcfrData(String xmlFilePath) {
-        log.info("Starting eCFR data ingestion from file: {}", xmlFilePath);
+    public CompletableFuture<EcfrDTO> ingestEcfrData(String xmlContent) {
+        log.info("Starting eCFR data ingestion from XML content");
         try {
-            EcfrDTO ecfrData = xmlParser.parseEcfrXmlFromString(xmlFilePath);
+            // Validate XML content
+            if (xmlContent == null || xmlContent.trim().isEmpty()) {
+                throw new IllegalArgumentException("XML content cannot be null or empty");
+            }
+
+            // Parse XML content
+            EcfrDTO ecfrData = xmlParser.parseEcfrXmlFromString(xmlContent);
             
+            // Validate parsed data
             if (!validationService.validateEcfrData(ecfrData)) {
-                throw new RuntimeException("Invalid eCFR data");
+                throw new RuntimeException("Invalid eCFR data structure");
+            }
+
+            // Extract title number from the data
+            String titleNumber = extractTitleNumber(ecfrData);
+            if (titleNumber == null) {
+                throw new RuntimeException("Could not determine title number from XML content");
+            }
+
+            // Check if document already exists
+            Optional<EcfrDTO> existingDoc = repository.findByTitleNumber(titleNumber);
+            if (existingDoc.isPresent()) {
+                log.info("Document for title {} already exists, updating...", titleNumber);
+                ecfrData.setId(existingDoc.get().getId());
             }
             
-            repository.save(ecfrData);
-            log.info("Successfully ingested eCFR data");
-            return CompletableFuture.completedFuture(null);
+            // Save to MongoDB
+            EcfrDTO savedData = repository.save(ecfrData);
+            log.info("Successfully ingested eCFR data for title {}", titleNumber);
+            return CompletableFuture.completedFuture(savedData);
         } catch (Exception e) {
-            log.error("Error ingesting eCFR data", e);
+            log.error("Error ingesting eCFR data: {}", e.getMessage(), e);
             return CompletableFuture.failedFuture(e);
         }
+    }
+
+    private String extractTitleNumber(EcfrDTO ecfrData) {
+        if (ecfrData.getText() != null && 
+            ecfrData.getText().getBody() != null && 
+            ecfrData.getText().getBody().getEcfrbrws() != null) {
+            return ecfrData.getText().getBody().getEcfrbrws().getTitle();
+        }
+        return null;
     }
 
     @Async

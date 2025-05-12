@@ -20,7 +20,7 @@ public class SourceDTO extends BaseDTO {
      * Required field.
      */
     @NotBlank(message = "Source content is required")
-    @JacksonXmlProperty(localName = "SOURCE")
+    @JacksonXmlProperty(localName = "SOURCE_CONTENT")
     private String content;
 
     /**
