@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+@Profile("!test")
 @EnableMongoAuditing
 @EnableMongoRepositories(basePackages = "com.ecfr.repository")
 public class MongoConfig {

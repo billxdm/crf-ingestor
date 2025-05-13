@@ -14,10 +14,6 @@ public class PartDTO extends BaseDTO {
     @JacksonXmlProperty(localName = "HEAD")
     private String head;
 
-    @JacksonXmlProperty(localName = "DIV6")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SubpartDTO> subparts;
-
     @JacksonXmlProperty(localName = "DIV8")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<SectionDTO> sections;
@@ -53,4 +49,9 @@ public class PartDTO extends BaseDTO {
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "EXTRACT")
     private List<ExtractDTO> extracts;
+
+    @Override
+    public String getType() {
+        return "PART";
+    }
 } 

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
@@ -18,25 +17,20 @@ import java.util.List;
 public class EcfrbrwsDTO extends BaseDTO {
     /**
      * Title of the document.
-     * Required field.
      */
-    @NotBlank(message = "Title is required")
     @JacksonXmlProperty(localName = "TITLE")
     private String title;
 
     /**
      * Subtitle of the document.
-     * Required field.
      */
-    @NotBlank(message = "Subtitle is required")
     @JacksonXmlProperty(localName = "SUBTITLE")
     private String subtitle;
 
     /**
      * Chapter identifier.
-     * Required field. Must contain only letters, numbers, hyphens, and underscores.
+     * Must contain only letters, numbers, hyphens, and underscores.
      */
-    @NotBlank(message = "Chapter is required")
     @Pattern(regexp = "^[A-Za-z0-9-_]+$", message = "Chapter must contain only letters, numbers, hyphens, and underscores")
     @JacksonXmlProperty(localName = "CHAPTER")
     private String chapter;
@@ -51,9 +45,8 @@ public class EcfrbrwsDTO extends BaseDTO {
 
     /**
      * Part identifier.
-     * Required field. Must contain only letters, numbers, hyphens, and underscores.
+     * Must contain only letters, numbers, hyphens, and underscores.
      */
-    @NotBlank(message = "Part is required")
     @Pattern(regexp = "^[A-Za-z0-9-_]+$", message = "Part must contain only letters, numbers, hyphens, and underscores")
     @JacksonXmlProperty(localName = "PART")
     private String part;
@@ -123,5 +116,41 @@ public class EcfrbrwsDTO extends BaseDTO {
 
     public String getEffectiveDate() {
         return effectiveDate;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public void setChapter(String chapter) {
+        this.chapter = chapter;
+    }
+
+    public void setSubchapter(String subchapter) {
+        this.subchapter = subchapter;
+    }
+
+    public void setPart(String part) {
+        this.part = part;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public void setSection(String section) {
+        this.section = section;
+    }
+
+    public void setEffectiveDate(String effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
+
+    public void setId(String id) {
+        super.id = id;
     }
 } 

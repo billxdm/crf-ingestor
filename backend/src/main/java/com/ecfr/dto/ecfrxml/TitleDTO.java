@@ -14,36 +14,17 @@ public class TitleDTO extends BaseDTO {
     @JacksonXmlProperty(localName = "HEAD")
     private String head;
 
-    @JacksonXmlProperty(localName = "DIV2")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SubtitleDTO> subtitles;
-
     @JacksonXmlProperty(localName = "DIV3")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<ChapterDTO> chapters;
 
-    @JacksonXmlProperty(localName = "DIV4")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SubchapterDTO> subchapters;
-
-    @JacksonXmlProperty(localName = "DIV5")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<PartDTO> parts;
-
-    @JacksonXmlProperty(localName = "DIV6")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SubpartDTO> subparts;
-
-    @JacksonXmlProperty(localName = "DIV8")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SectionDTO> sections;
-
-    @JacksonXmlProperty(localName = "APPENDIX")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<AppendixDTO> appendices;
-
     public String getTitle() {
         return head;
+    }
+
+    @Override
+    public String getType() {
+        return "TITLE";
     }
 
     public String getCHAPTER() {

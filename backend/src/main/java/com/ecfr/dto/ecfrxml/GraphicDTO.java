@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import java.util.Map;
 
 /**
  * DTO representing a graphic element in the eCFR document.
@@ -60,4 +61,39 @@ public class GraphicDTO extends BaseDTO {
      */
     @JacksonXmlProperty(localName = "ALT")
     private String altText;
+
+    @JacksonXmlProperty(localName = "CAPTION")
+    private String caption;
+
+    @JacksonXmlProperty(localName = "ATTRIBUTES")
+    private Map<String, String> attributes;
+
+    // Additional getter/setter methods
+    public String getSrc() {
+        return sourceUrl;
+    }
+
+    public void setSrc(String src) {
+        this.sourceUrl = src;
+    }
+
+    public String getAlt() {
+        return altText;
+    }
+
+    public void setAlt(String alt) {
+        this.altText = alt;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
 } 

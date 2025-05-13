@@ -84,10 +84,9 @@ public class ProcessTitle43Xml {
                 }
             }
 
-            if (division.getAuthorities() != null) {
-                for (AuthorityDTO authority : division.getAuthorities()) {
-                    mongoTemplate.save(authority, "authorities");
-                }
+            // Save authority if present
+            if (division.getAuthority() != null) {
+                mongoTemplate.save(division.getAuthority(), "authorities");
             }
 
             if (division.getExtracts() != null) {

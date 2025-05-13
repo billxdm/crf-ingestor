@@ -41,9 +41,10 @@ public class EcfrRepositoryTest {
         assertEquals("Title 43—Public Lands: Interior", found.getDivisions().get(0).getHead());
         
         // Test custom query
-        Optional<EcfrDTO> byTitle = ecfrRepository.findByTitleNumber("43");
-        assertTrue(byTitle.isPresent());
-        assertEquals("43", byTitle.get().getDivisions().get(0).getNumber());
+        List<EcfrDTO> byTitle = ecfrRepository.findByTitleNumber("43");
+        assertNotNull(byTitle);
+        assertFalse(byTitle.isEmpty());
+        assertEquals("43", byTitle.get(0).getText().getBody().getEcfrbrws().getTitle());
         
         // Clean up
         ecfrRepository.deleteById(saved.getId());

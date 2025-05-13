@@ -1,7 +1,7 @@
 package com.ecfr.service;
 
 import com.ecfr.dto.ecfrxml.EcfrDTO;
-import com.ecfr.dto.ecfrxml.EcfrbrwsDTO;
+import com.ecfr.dto.ecfrxml.DivisionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,33 +16,46 @@ public class EcfrValidationService {
             return false;
         }
 
-        // Validate header
-        if (ecfrData.getHeader() == null) {
-            log.error("Header is missing");
+        // Validate divisions (DIV1 elements)
+        if (ecfrData.getDivisions() == null || ecfrData.getDivisions().isEmpty()) {
+            log.error("No DIV1 elements found");
             return false;
         }
 
-        // Validate text and body
-        if (ecfrData.getText() == null || ecfrData.getText().getBody() == null) {
-            log.error("Text or body is missing");
+        // Validate each division
+        boolean foundTitle = false;
+        for (DivisionDTO division : ecfrData.getDivisions()) {
+            if (division == null) {
+                log.error("Null division found");
+                return false;
+            }
+
+            if ("TITLE".equals(division.getType())) {
+                foundTitle = true;
+                if (division.getNumber() == null || division.getNumber().trim().isEmpty()) {
+                    log.error("Title division missing number");
+                    return false;
+                }
+                if (division.getHead() == null || division.getHead().trim().isEmpty()) {
+                    log.error("Title division missing heading");
+                    return false;
+                }
+            }
+        }
+
+        if (!foundTitle) {
+            log.error("No TITLE division found");
             return false;
         }
 
-        // Validate ECFR browse info
-        EcfrbrwsDTO ecfrbrws = ecfrData.getText().getBody().getEcfrbrws();
-        if (ecfrbrws == null) {
-            log.error("ECFR browse info is missing");
+        // Validate title number can be extracted
+        String titleNumber = ecfrData.getTitleNumber();
+        if (titleNumber == null || titleNumber.trim().isEmpty()) {
+            log.error("Could not determine title number from XML content");
             return false;
         }
 
-        // Validate required fields
-        if (ecfrbrws.getTitle() == null || ecfrbrws.getSubtitle() == null || 
-            ecfrbrws.getChapter() == null || ecfrbrws.getPart() == null) {
-            log.error("Missing required fields in ECFR browse info");
-            return false;
-        }
-
-        log.info("ECFR data validation successful");
+        log.info("ECFR data validation successful for title {}", titleNumber);
         return true;
     }
 } 

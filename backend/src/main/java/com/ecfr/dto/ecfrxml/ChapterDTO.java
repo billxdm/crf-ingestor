@@ -18,19 +18,8 @@ public class ChapterDTO extends BaseDTO {
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<SubchapterDTO> subchapters;
 
-    @JacksonXmlProperty(localName = "DIV5")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<PartDTO> parts;
-
-    @JacksonXmlProperty(localName = "DIV6")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SubpartDTO> subparts;
-
-    @JacksonXmlProperty(localName = "DIV8")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<SectionDTO> sections;
-
-    @JacksonXmlProperty(localName = "APPENDIX")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    private List<AppendixDTO> appendices;
+    @Override
+    public String getType() {
+        return "CHAPTER";
+    }
 } 

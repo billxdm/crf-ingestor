@@ -71,8 +71,25 @@ public class EcfrXmlParser {
             log.info("Successfully parsed eCFR XML in {} seconds", duration.getSeconds());
             
             // Validate the parsed content
-            if (result == null || result.getText() == null || result.getText().getBody() == null) {
-                throw new RuntimeException("Invalid XML structure: missing required elements");
+            if (result == null || result.getDivisions() == null) {
+                throw new RuntimeException("Invalid XML structure: missing required DIV1 elements");
+            }
+
+            // Create EcfrbrwsDTO from the first DIV1 element if it doesn't exist
+            if (result.getText() == null) {
+                result.setText(new TextDTO());
+            }
+            if (result.getText().getBody() == null) {
+                result.getText().setBody(new BodyDTO());
+            }
+            if (result.getText().getBody().getEcfrbrws() == null && !result.getDivisions().isEmpty()) {
+                DivisionDTO firstDivision = result.getDivisions().get(0);
+                if (firstDivision != null && "TITLE".equals(firstDivision.getType())) {
+                    EcfrbrwsDTO ecfrbrws = new EcfrbrwsDTO();
+                    ecfrbrws.setTitle(firstDivision.getNumber());
+                    ecfrbrws.setId(firstDivision.getNumber());
+                    result.getText().getBody().setEcfrbrws(ecfrbrws);
+                }
             }
             
             return result;

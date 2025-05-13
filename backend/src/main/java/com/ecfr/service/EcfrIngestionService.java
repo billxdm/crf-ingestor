@@ -1,19 +1,22 @@
 package com.ecfr.service;
 
-import com.ecfr.dto.ecfrxml.EcfrDTO;
+import com.ecfr.dto.ecfrxml.*;
+import com.ecfr.model.Paragraph;
 import com.ecfr.repository.EcfrRepository;
+import com.ecfr.service.EcfrValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -195,32 +198,233 @@ public class EcfrIngestionService {
             // Extract title number from the data
             String titleNumber = extractTitleNumber(ecfrData);
             if (titleNumber == null) {
-                throw new RuntimeException("Could not determine title number from XML content");
+                throw new RuntimeException("Could not extract title number from eCFR data");
             }
 
-            // Check if document already exists
-            Optional<EcfrDTO> existingDoc = repository.findByTitleNumber(titleNumber);
-            if (existingDoc.isPresent()) {
-                log.info("Document for title {} already exists, updating...", titleNumber);
-                ecfrData.setId(existingDoc.get().getId());
+            // Check for existing documents
+            List<EcfrDTO> existingDocs = repository.findByTitleNumber(titleNumber);
+            if (!existingDocs.isEmpty()) {
+                // Use the most recent document as a reference
+                EcfrDTO mostRecentDoc = existingDocs.get(existingDocs.size() - 1);
+                // Update any necessary fields from the existing document
+                if (mostRecentDoc.getHeader() != null) {
+                    ecfrData.getHeader().setEffectiveDate(mostRecentDoc.getHeader().getEffectiveDate());
+                }
             }
-            
-            // Save to MongoDB
-            EcfrDTO savedData = repository.save(ecfrData);
-            log.info("Successfully ingested eCFR data for title {}", titleNumber);
-            return CompletableFuture.completedFuture(savedData);
+
+            // Save the new document
+            EcfrDTO savedDoc = repository.save(ecfrData);
+            return CompletableFuture.completedFuture(savedDoc);
         } catch (Exception e) {
             log.error("Error ingesting eCFR data: {}", e.getMessage(), e);
             return CompletableFuture.failedFuture(e);
         }
     }
-
-    private String extractTitleNumber(EcfrDTO ecfrData) {
+    
+    private void processParagraphs(EcfrDTO ecfrData) {
         if (ecfrData.getText() != null && 
             ecfrData.getText().getBody() != null && 
             ecfrData.getText().getBody().getEcfrbrws() != null) {
-            return ecfrData.getText().getBody().getEcfrbrws().getTitle();
+            
+            String titleNumber = ecfrData.getText().getBody().getEcfrbrws().getTitle();
+            
+            // Process divisions
+            if (ecfrData.getDivisions() != null) {
+                for (DivisionDTO division : ecfrData.getDivisions()) {
+                    processDivisionParagraphs(division, titleNumber);
+                }
+            }
         }
+    }
+    
+    private void processDivisionParagraphs(DivisionDTO division, String titleNumber) {
+        if (division.getParagraphs() != null) {
+            for (ParagraphDTO paragraphDTO : division.getParagraphs()) {
+                Paragraph paragraph = new Paragraph();
+                
+                // Set basic information
+                paragraph.setNodeId(paragraphDTO.getNodeId());
+                paragraph.setNumber(paragraphDTO.getNumber());
+                paragraph.setContent(paragraphDTO.getContent());
+                paragraph.setTitleNumber(titleNumber);
+                paragraph.setPartNumber(division.getNumber());
+                
+                // Set formatting
+                paragraph.setIndentationLevel(paragraphDTO.getIndentationLevel());
+                paragraph.setClasses(paragraphDTO.getClasses());
+                paragraph.setAttributes(paragraphDTO.getAttributes());
+                
+                // Set metadata
+                paragraph.setWordCount(countWords(paragraphDTO.getContent()));
+                paragraph.setIsIndented(paragraphDTO.getIndentationLevel() > 0);
+                paragraph.setIsBold(paragraphDTO.isBold());
+                paragraph.setIsItalic(paragraphDTO.isItalic());
+                paragraph.setIsUnderlined(paragraphDTO.isUnderlined());
+                
+                // Process nested elements
+                processParagraphCitations(paragraph, paragraphDTO);
+                processParagraphGraphics(paragraph, paragraphDTO);
+                processParagraphFootnotes(paragraph, paragraphDTO);
+                
+                // Generate formatted content
+                paragraph.setFormattedContent(generateFormattedContent(paragraph));
+                
+                // Save paragraph
+                mongoTemplate.save(paragraph, "paragraphs");
+            }
+        }
+        
+        // Process sub-divisions recursively
+        if (division.getSubDivisions() != null) {
+            for (DivisionDTO subDivision : division.getSubDivisions()) {
+                processDivisionParagraphs(subDivision, titleNumber);
+            }
+        }
+    }
+    
+    private void processParagraphCitations(Paragraph paragraph, ParagraphDTO paragraphDTO) {
+        if (paragraphDTO.getCitations() != null) {
+            List<Paragraph.Citation> citations = new ArrayList<>();
+            for (CitationDTO citationDTO : paragraphDTO.getCitations()) {
+                Paragraph.Citation citation = new Paragraph.Citation();
+                citation.setType(citationDTO.getType());
+                citation.setContent(citationDTO.getContent());
+                citation.setReference(citationDTO.getReference());
+                citation.setDate(citationDTO.getDate());
+                citations.add(citation);
+            }
+            paragraph.setCitations(citations);
+        }
+    }
+    
+    private void processParagraphGraphics(Paragraph paragraph, ParagraphDTO paragraphDTO) {
+        if (paragraphDTO.getGraphics() != null) {
+            List<Paragraph.Graphic> graphics = new ArrayList<>();
+            for (GraphicDTO graphicDTO : paragraphDTO.getGraphics()) {
+                Paragraph.Graphic graphic = new Paragraph.Graphic();
+                graphic.setType(graphicDTO.getType());
+                graphic.setSrc(graphicDTO.getSrc());
+                graphic.setAlt(graphicDTO.getAlt());
+                graphic.setCaption(graphicDTO.getCaption());
+                graphic.setAttributes(graphicDTO.getAttributes());
+                graphics.add(graphic);
+            }
+            paragraph.setGraphics(graphics);
+        }
+    }
+    
+    private void processParagraphFootnotes(Paragraph paragraph, ParagraphDTO paragraphDTO) {
+        if (paragraphDTO.getFootnotes() != null) {
+            List<Paragraph.Footnote> footnotes = new ArrayList<>();
+            for (FootnoteDTO footnoteDTO : paragraphDTO.getFootnotes()) {
+                Paragraph.Footnote footnote = new Paragraph.Footnote();
+                footnote.setNumber(footnoteDTO.getNumber());
+                footnote.setContent(footnoteDTO.getContent());
+                footnote.setReference(footnoteDTO.getReference());
+                footnotes.add(footnote);
+            }
+            paragraph.setFootnotes(footnotes);
+        }
+    }
+    
+    private int countWords(String text) {
+        if (text == null || text.isEmpty()) {
+            return 0;
+        }
+        return text.split("\\s+").length;
+    }
+    
+    private String generateFormattedContent(Paragraph paragraph) {
+        StringBuilder formatted = new StringBuilder();
+        
+        // Add indentation
+        for (int i = 0; i < paragraph.getIndentationLevel(); i++) {
+            formatted.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
+        
+        // Add paragraph number if present
+        if (paragraph.getNumber() != null) {
+            formatted.append("<span class=\"paragraph-number\">")
+                    .append(paragraph.getNumber())
+                    .append("</span> ");
+        }
+        
+        // Add content with formatting
+        String content = paragraph.getContent();
+        if (paragraph.isBold()) {
+            content = "<strong>" + content + "</strong>";
+        }
+        if (paragraph.isItalic()) {
+            content = "<em>" + content + "</em>";
+        }
+        if (paragraph.isUnderlined()) {
+            content = "<u>" + content + "</u>";
+        }
+        formatted.append(content);
+        
+        // Add citations
+        if (!paragraph.getCitations().isEmpty()) {
+            formatted.append("<div class=\"citations\">");
+            for (Paragraph.Citation citation : paragraph.getCitations()) {
+                formatted.append("<div class=\"citation ").append(citation.getType().toLowerCase()).append("\">");
+                formatted.append(citation.getContent());
+                if (citation.getDate() != null) {
+                    formatted.append(" (").append(citation.getDate()).append(")");
+                }
+                formatted.append("</div>");
+            }
+            formatted.append("</div>");
+        }
+        
+        // Add graphics
+        if (!paragraph.getGraphics().isEmpty()) {
+            formatted.append("<div class=\"graphics\">");
+            for (Paragraph.Graphic graphic : paragraph.getGraphics()) {
+                formatted.append("<div class=\"graphic ").append(graphic.getType().toLowerCase()).append("\">");
+                formatted.append("<img src=\"").append(graphic.getSrc()).append("\" alt=\"").append(graphic.getAlt()).append("\">");
+                if (graphic.getCaption() != null) {
+                    formatted.append("<div class=\"caption\">").append(graphic.getCaption()).append("</div>");
+                }
+                formatted.append("</div>");
+            }
+            formatted.append("</div>");
+        }
+        
+        // Add footnotes
+        if (!paragraph.getFootnotes().isEmpty()) {
+            formatted.append("<div class=\"footnotes\">");
+            for (Paragraph.Footnote footnote : paragraph.getFootnotes()) {
+                formatted.append("<div class=\"footnote\">");
+                formatted.append("<sup>").append(footnote.getNumber()).append("</sup> ");
+                formatted.append(footnote.getContent());
+                formatted.append("</div>");
+            }
+            formatted.append("</div>");
+        }
+        
+        return formatted.toString();
+    }
+
+    private String extractTitleNumber(EcfrDTO ecfrData) {
+        // First try to get title number from Ecfrbrws element
+        if (ecfrData.getText() != null && 
+            ecfrData.getText().getBody() != null && 
+            ecfrData.getText().getBody().getEcfrbrws() != null) {
+            String title = ecfrData.getText().getBody().getEcfrbrws().getTitle();
+            if (title != null && !title.trim().isEmpty()) {
+                return title;
+            }
+        }
+
+        // If not found in Ecfrbrws, try to get from DIV1 element's N attribute
+        if (ecfrData.getDivisions() != null && !ecfrData.getDivisions().isEmpty()) {
+            for (DivisionDTO division : ecfrData.getDivisions()) {
+                if ("TITLE".equals(division.getType()) && division.getNumber() != null) {
+                    return division.getNumber();
+                }
+            }
+        }
+
         return null;
     }
 
@@ -267,5 +471,13 @@ public class EcfrIngestionService {
             log.error("Error during document deletion: {}", e.getMessage(), e);
             return CompletableFuture.failedFuture(e);
         }
+    }
+
+    public EcfrDTO findByTitleNumber(String titleNumber) {
+        List<EcfrDTO> documents = repository.findByTitleNumber(titleNumber);
+        if (documents.isEmpty()) {
+            return null;
+        }
+        return documents.get(documents.size() - 1); // Return the most recent document
     }
 } 

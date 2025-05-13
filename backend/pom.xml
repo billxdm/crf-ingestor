@@ -24,6 +24,9 @@
         <spring-cloud.version>2022.0.4</spring-cloud.version>
         <testcontainers.version>1.19.3</testcontainers.version>
         <lombok.version>1.18.30</lombok.version>
+        <mockito.version>5.10.0</mockito.version>
+        <testng.version>7.9.0</testng.version>
+        <byte-buddy.version>1.14.12</byte-buddy.version>
     </properties>
     
     <dependencies>
@@ -73,6 +76,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -87,6 +96,24 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
             <scope>test</scope>
         </dependency>
         
@@ -138,6 +165,14 @@
             <version>4.11.0</version>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Byte Buddy -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     
     <dependencyManagement>
@@ -187,6 +222,19 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <argLine>
+                        -Dnet.bytebuddy.experimental=true
+                    </argLine>
+                    <systemPropertyVariables>
+                        <de.flapdoodle.mongodb.embedded.version>6.0.2</de.flapdoodle.mongodb.embedded.version>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

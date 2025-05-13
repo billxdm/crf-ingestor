@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface EcfrRepository extends MongoRepository<EcfrDTO, String> {
     // Find by title number
     @Query(value = "{ 'text.body.ecfrbrws.title': ?0 }")
-    Optional<EcfrDTO> findByTitleNumber(String titleNumber);
+    List<EcfrDTO> findByTitleNumber(String titleNumber);
 
     // Find by effective date
     @Query(value = "{ 'header.effectiveDate': ?0 }")

@@ -49,4 +49,9 @@ public class SectionDTO extends BaseDTO {
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "EXTRACT")
     private List<ExtractDTO> extracts;
+
+    @Override
+    public String getType() {
+        return "SECTION";
+    }
 } 

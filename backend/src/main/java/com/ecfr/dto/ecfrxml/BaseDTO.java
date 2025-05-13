@@ -3,9 +3,9 @@ package com.ecfr.dto.ecfrxml;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.annotation.Id;
 
 /**
  * Base DTO class that contains common fields for all XML elements in the eCFR system.
@@ -18,16 +18,15 @@ public class BaseDTO {
      * Unique identifier for the element.
      * Must contain only letters, numbers, hyphens, and underscores.
      */
-    @NotBlank(message = "ID is required")
+    @Id
     @Pattern(regexp = "^[A-Za-z0-9-_]+$", message = "ID must contain only letters, numbers, hyphens, and underscores")
     @JacksonXmlProperty(localName = "ID")
-    private String id;
+    protected String id;
 
     /**
      * Type of the element.
      * Must contain only letters, numbers, hyphens, and underscores.
      */
-    @NotBlank(message = "Type is required")
     @Pattern(regexp = "^[A-Za-z0-9-_]+$", message = "Type must contain only letters, numbers, hyphens, and underscores")
     @JacksonXmlProperty(localName = "TYPE")
     @Field("baseType")
@@ -83,9 +82,7 @@ public class BaseDTO {
 
     /**
      * The node type of the element.
-     * Required field.
      */
-    @NotBlank(message = "Node type is required")
     @JacksonXmlProperty(localName = "NODE")
     private String nodeType;
 

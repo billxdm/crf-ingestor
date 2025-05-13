@@ -12,10 +12,11 @@ public class TextDTO {
     @JacksonXmlProperty(localName = "BODY")
     private BodyDTO body;
 
-    @JacksonXmlProperty(localName = "TEXT")
-    private String text;
-
     public BodyDTO getBody() {
         return body;
+    }
+
+    public void setBody(BodyDTO body) {
+        this.body = body;
     }
 } 

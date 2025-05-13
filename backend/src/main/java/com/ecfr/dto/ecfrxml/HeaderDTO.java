@@ -40,4 +40,20 @@ public class HeaderDTO extends BaseDTO {
     public String getTitle() {
         return title;
     }
+
+    public String getEffectiveDate() {
+        return effectiveDate;
+    }
+
+    public void setEffectiveDate(String effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 } 

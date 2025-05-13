@@ -89,21 +89,38 @@ const graphicSchema = {
 const paragraphSchema = {
   ...baseSchema,
   content: { type: String, required: true },
-  type: { type: String, pattern: '^P(-[1-9])?$' },
-  level: Number,
-  align: String,
-  citations: [{ type: Object, ref: 'Citation' }],
-  crossReferences: [{ type: Object, ref: 'CrossReference' }],
-  footnotes: [{ type: Object, ref: 'Footnote' }],
-  source: String,
-  text: String,
-  ellipses: [{ type: Object, ref: 'Ellipsis' }],
-  notes: [{ type: Object, ref: 'Note' }],
+  formattedContent: { type: String, required: true },
+  number: String,
+  indentationLevel: { type: Number, min: 0 },
+  classes: [String],
+  attributes: { type: Map, of: String },
+  sectionId: { type: String, required: true },
+  titleNumber: { type: String, required: true },
+  partNumber: { type: String, required: true },
+  wordCount: { type: Number, min: 0 },
+  isIndented: Boolean,
+  isBold: Boolean,
+  isItalic: Boolean,
+  isUnderlined: Boolean,
+  citations: [{
+    type: String,
+    content: String,
+    reference: String,
+    date: String
+  }],
   tables: [{ type: Object, ref: 'Table' }],
-  graphics: [{ type: Object, ref: 'Graphic' }],
-  authorities: [{ type: Object, ref: 'Authority' }],
-  reserved: [{ type: Object, ref: 'Reserved' }],
-  extracts: [{ type: Object, ref: 'Extract' }]
+  graphics: [{
+    type: String,
+    src: String,
+    alt: String,
+    caption: String,
+    attributes: { type: Map, of: String }
+  }],
+  footnotes: [{
+    number: String,
+    content: String,
+    reference: String
+  }]
 };
 
 // Extract Schema

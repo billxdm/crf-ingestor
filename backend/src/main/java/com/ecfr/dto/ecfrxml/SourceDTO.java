@@ -75,4 +75,28 @@ public class SourceDTO extends BaseDTO {
     @JacksonXmlProperty(localName = "AMDDATE")
     @Field("sourceAmendmentDate")
     private String amendmentDate;
+
+    // Add support for <HED> (heading) and <PSPACE> (paragraph space) and other common elements
+    @JacksonXmlProperty(localName = "HED")
+    private String heading;
+
+    @JacksonXmlProperty(localName = "PSPACE")
+    private String pspace;
+
+    // Add support for nested <P> elements (paragraphs)
+    @JacksonXmlProperty(localName = "P")
+    @JacksonXmlElementWrapper(useWrapping = false)
+    private List<String> paragraphs;
+
+    // Add support for <LABEL>
+    @JacksonXmlProperty(localName = "LABEL")
+    private String label;
+
+    // Add support for <TITLE>
+    @JacksonXmlProperty(localName = "TITLE")
+    private String title;
+
+    // Add support for <NODE>
+    @JacksonXmlProperty(localName = "NODE")
+    private String node;
 } 

@@ -1,6 +1,8 @@
 package com.ecfr.config;
 
+import com.ecfr.dto.ecfrxml.EcfrDTO;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -13,6 +15,12 @@ public class JacksonConfig {
     public XmlMapper xmlMapper() {
         XmlMapper xmlMapper = new XmlMapper();
         xmlMapper.setDefaultUseWrapper(false);
+        
+        // Register custom deserializer
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(EcfrDTO.class, new EcfrXmlDeserializer());
+        xmlMapper.registerModule(module);
+        
         return xmlMapper;
     }
 } 

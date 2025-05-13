@@ -2,11 +2,14 @@ package com.ecfr.dto.ecfrxml;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
+import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * DTO representing a paragraph in the eCFR document.
@@ -14,13 +17,14 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ParagraphDTO extends BaseDTO {
     /**
      * The paragraph content.
      * Required field.
      */
     @NotBlank(message = "Paragraph content is required")
-    @JacksonXmlProperty(localName = "P")
+    @JacksonXmlText
     private String content;
 
     /**
@@ -99,4 +103,125 @@ public class ParagraphDTO extends BaseDTO {
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "EXTRACT")
     private List<ExtractDTO> extracts;
+
+    @JacksonXmlProperty(localName = "NODEID")
+    private String nodeId;
+
+    @JacksonXmlProperty(localName = "NUMBER")
+    private String number;
+
+    @JacksonXmlProperty(localName = "INDENTATION_LEVEL")
+    private int indentationLevel;
+
+    @JacksonXmlProperty(localName = "CLASSES")
+    private List<String> classes;
+
+    @JacksonXmlProperty(localName = "ATTRIBUTES")
+    private Map<String, String> attributes;
+
+    @JacksonXmlProperty(localName = "IS_BOLD")
+    private boolean isBold;
+
+    @JacksonXmlProperty(localName = "IS_ITALIC")
+    private boolean isItalic;
+
+    @JacksonXmlProperty(localName = "IS_UNDERLINED")
+    private boolean isUnderlined;
+
+    public ParagraphDTO() {
+        // Default constructor for Jackson
+    }
+
+    public ParagraphDTO(String text) {
+        this.text = text;
+    }
+
+    // Additional getter/setter methods
+    public boolean isBold() {
+        return isBold;
+    }
+
+    public void setIsBold(boolean isBold) {
+        this.isBold = isBold;
+    }
+
+    public boolean isItalic() {
+        return isItalic;
+    }
+
+    public void setIsItalic(boolean isItalic) {
+        this.isItalic = isItalic;
+    }
+
+    public boolean isUnderlined() {
+        return isUnderlined;
+    }
+
+    public void setIsUnderlined(boolean isUnderlined) {
+        this.isUnderlined = isUnderlined;
+    }
+
+    public int getIndentationLevel() {
+        return indentationLevel;
+    }
+
+    public void setIndentationLevel(int indentationLevel) {
+        this.indentationLevel = indentationLevel;
+    }
+
+    public List<String> getClasses() {
+        return classes;
+    }
+
+    public void setClasses(List<String> classes) {
+        this.classes = classes;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public List<CitationDTO> getCitations() {
+        return citations;
+    }
+
+    public List<GraphicDTO> getGraphics() {
+        return graphics;
+    }
+
+    public List<FootnoteDTO> getFootnotes() {
+        return footnotes;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getText() {
+        return text;
+    }
 } 

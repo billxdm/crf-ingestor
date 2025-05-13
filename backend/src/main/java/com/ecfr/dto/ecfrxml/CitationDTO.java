@@ -1,48 +1,50 @@
 package com.ecfr.dto.ecfrxml;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * DTO representing a citation in the eCFR document.
  * Citations reference other documents or regulations.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class CitationDTO extends BaseDTO {
-    /**
-     * The citation content.
-     * Required field.
-     */
-    @NotBlank(message = "Citation content is required")
-    @JacksonXmlProperty(localName = "CITA")
-    private String citation;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class CitationDTO {
     /**
      * The type of citation.
      */
     @JacksonXmlProperty(localName = "TYPE")
-    @Field("citationType")
     private String type;
 
     /**
-     * The target of the citation.
+     * The citation content.
      */
-    @JacksonXmlProperty(localName = "TARGET")
-    private String target;
+    private String content;
 
     /**
-     * The source of the citation.
+     * The reference of the citation.
      */
-    @JacksonXmlProperty(localName = "SOURCE")
-    private String source;
+    private String reference;
 
     /**
-     * The effective date of the citation.
+     * The date of the citation.
      */
-    @JacksonXmlProperty(localName = "EFFDATE")
-    private String effectiveDate;
+    private String date;
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getReference() {
+        return reference;
+    }
 } 

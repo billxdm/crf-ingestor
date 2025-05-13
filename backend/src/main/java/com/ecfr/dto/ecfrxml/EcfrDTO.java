@@ -4,28 +4,25 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
-@Getter
-@Setter
 @Document(collection = "ecfr_documents")
 @JacksonXmlRootElement(localName = "ECFR")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EcfrDTO {
     @Id
     private String id;
 
-    @Indexed
-    @JacksonXmlProperty(localName = "HEADER")
-    private HeaderDTO header;
+    @JacksonXmlProperty(localName = "AMDDATE")
+    private String amendmentDate;
 
-    @JacksonXmlProperty(localName = "TEXT")
-    private TextDTO text;
+    @JacksonXmlProperty(localName = "VOLUME")
+    private VolumeDTO volume;
 
     @JacksonXmlProperty(localName = "DIV1")
     @JacksonXmlElementWrapper(useWrapping = false)
@@ -35,28 +32,24 @@ public class EcfrDTO {
     private String titleNumber;
 
     public String getId() {
-        if (text != null && text.getBody() != null && text.getBody().getEcfrbrws() != null) {
-            return text.getBody().getEcfrbrws().getId();
+        if (divisions != null && !divisions.isEmpty()) {
+            DivisionDTO firstDivision = divisions.get(0);
+            if (firstDivision != null && "TITLE".equals(firstDivision.getType())) {
+                return firstDivision.getN();
+            }
         }
         return id;
     }
 
     public String getTitleNumber() {
-        if (titleNumber == null && text != null && text.getBody() != null && text.getBody().getEcfrbrws() != null) {
-            titleNumber = text.getBody().getEcfrbrws().getTitle();
+        if (titleNumber == null && divisions != null && !divisions.isEmpty()) {
+            for (DivisionDTO division : divisions) {
+                if (division != null && "TITLE".equals(division.getType())) {
+                    titleNumber = division.getN();
+                    break;
+                }
+            }
         }
         return titleNumber;
-    }
-
-    public void setTitleNumber(String titleNumber) {
-        this.titleNumber = titleNumber;
-    }
-
-    public HeaderDTO getHeader() {
-        return header;
-    }
-
-    public TextDTO getText() {
-        return text;
     }
 } 
